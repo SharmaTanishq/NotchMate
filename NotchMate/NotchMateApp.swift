@@ -5,6 +5,7 @@
 //  Created by Tanishq Sharma on 9/17/26.
 //
 
+import Combine
 import NookApp
 import SwiftUI
 
@@ -15,10 +16,18 @@ enum NotchMateApp {
     /// Liquid Glass) is left alone.
     private static let liquidGlassSeedMigrationKey = "notchmate.migratedSeedSolidToLiquidGlass"
 
+    private static var settingsRouteCancellable: AnyCancellable?
+
     @MainActor
     static func configuration() -> NookConfiguration {
+        let layout = NotchMateLayoutSettings.shared
         var configuration = NookConfiguration()
         configuration.setHome { ContentView() }
+        configuration.setCompactLeading { NotchMateCompactChrome(slot: .leading) }
+        configuration.setCompactTrailing { NotchMateCompactChrome(slot: .trailing) }
+        configuration.setSettings { NotchMateInNotchSettingsRedirect() }
+        configuration.metrics = layout.chromeMetrics
+        configuration.expandedWidth = layout.expandedWidth
         configuration.branding = NookHostBranding(
             hostName: "NotchMate",
             hostTagline: "A notch companion built on OpenNook."
@@ -37,8 +46,26 @@ enum NotchMateApp {
         configuration.onReady = { coordinator in
             migrateAutoPresentationToNotch(appState: coordinator.appState)
             migrateSeedSolidToLiquidGlass(appState: coordinator.appState)
+            NotchMateNowPlaying.shared.bind(flags: NotchMateFeatureFlags.shared)
+            NotchMateAgents.shared.bind(flags: NotchMateFeatureFlags.shared)
+            routeOpenNookSettingsToWindow(coordinator: coordinator)
         }
         return configuration
+    }
+
+    /// Gear and menu-bar “Settings…” still call OpenNook `showSettings()`. Bounce
+    /// immediately to the native window and keep the notch on home.
+    @MainActor
+    private static func routeOpenNookSettingsToWindow(coordinator: AppCoordinator) {
+        settingsRouteCancellable = coordinator.appState.$viewMode
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { mode in
+                guard mode == .settings else { return }
+                NotchMateSettingsWindowController.shared.present(appState: coordinator.appState)
+                coordinator.appState.showHome()
+                coordinator.hideNook()
+            }
     }
 
     /// OpenNook's `.auto` becomes a floating island on many setups (external display,
@@ -77,5 +104,14 @@ enum NotchMateApp {
         preferences.surfaceStyle = .liquidGlass
         appState.replaceAppearancePreferences(preferences)
         defaults.set(true, forKey: liquidGlassSeedMigrationKey)
+    }
+}
+
+/// OpenNook still requires a Settings view for the gear. This never stays on screen.
+struct NotchMateInNotchSettingsRedirect: View {
+    var body: some View {
+        Color.clear
+            .frame(width: 1, height: 1)
+            .accessibilityHidden(true)
     }
 }
