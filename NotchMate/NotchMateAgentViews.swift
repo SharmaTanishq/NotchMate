@@ -5,6 +5,7 @@
 //  Compact: circular per-tool icons. Expanded: short session list.
 //
 
+import AppKit
 import NookApp
 import SwiftUI
 
@@ -187,16 +188,14 @@ struct NotchMateAgentGlyph: View {
 
     var body: some View {
         ZStack {
+            logo
+                .frame(width: size, height: size)
+                .clipShape(Circle())
             Circle()
-                .fill(fill)
-            Circle()
-                .strokeBorder(theme.primaryLabel.opacity(0.18), lineWidth: 0.8)
-            Text(tool.monogram)
-                .font(.system(size: max(8, size * 0.42), weight: .semibold, design: .rounded))
-                .foregroundStyle(label)
+                .strokeBorder(ring, lineWidth: state == .approval ? 1.6 : 0.8)
         }
         .frame(width: size, height: size)
-        .opacity(state == .idle || state == .done ? 0.72 : 1)
+        .opacity(state == .idle || state == .done ? 0.7 : 1)
         .offset(y: bounce && state == .approval ? -3 : 0)
         .accessibilityLabel("\(tool.title), \(state.title)")
         .onChange(of: state) { _, newState in
@@ -213,23 +212,31 @@ struct NotchMateAgentGlyph: View {
         )
     }
 
-    private var fill: Color {
-        switch state {
-        case .approval:
-            return Color.orange.opacity(0.92)
-        case .running:
-            return Color.accentColor.opacity(0.85)
-        case .idle, .done:
-            return theme.secondaryLabel.opacity(0.22)
+    @ViewBuilder
+    private var logo: some View {
+        if let image = NotchMateAgentArtwork.image(for: tool) {
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFill()
+        } else {
+            ZStack {
+                Circle().fill(theme.secondaryLabel.opacity(0.22))
+                Image(systemName: tool.fallbackSymbol)
+                    .font(.system(size: max(9, size * 0.42), weight: .semibold))
+                    .foregroundStyle(theme.primaryLabel)
+            }
         }
     }
 
-    private var label: Color {
+    private var ring: Color {
         switch state {
-        case .approval, .running:
-            return Color.white.opacity(0.95)
+        case .approval:
+            return Color.orange.opacity(0.95)
+        case .running:
+            return theme.primaryLabel.opacity(0.22)
         case .idle, .done:
-            return theme.primaryLabel.opacity(0.85)
+            return theme.primaryLabel.opacity(0.12)
         }
     }
 }

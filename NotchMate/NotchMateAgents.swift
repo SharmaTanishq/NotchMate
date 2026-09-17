@@ -25,24 +25,6 @@ enum NotchMateAgentTool: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    var monogram: String {
-        switch self {
-        case .claude: return "C"
-        case .codex: return "X"
-        case .cursor: return "R"
-        case .pi: return "π"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .claude: return "sparkles"
-        case .codex: return "chevron.left.forwardslash.chevron.right"
-        case .cursor: return "cursorarrow"
-        case .pi: return "function"
-        }
-    }
-
     /// Only Claude Code and Codex expose a permission-request hook we can honor.
     var canSignalApproval: Bool {
         switch self {
