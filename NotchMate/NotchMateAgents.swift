@@ -70,6 +70,7 @@ struct NotchMateAgentToolSummary: Identifiable, Equatable {
     var tool: NotchMateAgentTool
     var state: NotchMateAgentState
     var count: Int
+    var cwd: String
 
     var id: String { tool.rawValue }
 
@@ -118,7 +119,12 @@ final class NotchMateAgents: ObservableObject {
             } else {
                 state = .idle
             }
-            return NotchMateAgentToolSummary(tool: tool, state: state, count: matches.count)
+            return NotchMateAgentToolSummary(
+                tool: tool,
+                state: state,
+                count: matches.count,
+                cwd: matches.sorted { $0.updatedAt > $1.updatedAt }.first?.cwd ?? ""
+            )
         }
     }
 

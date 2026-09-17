@@ -49,21 +49,28 @@ struct NotchMateAgentsHome: View {
     }
 
     private func sessionRow(_ session: NotchMateAgentSession) -> some View {
-        HStack(spacing: 10) {
-            NotchMateAgentGlyph(tool: session.tool, state: session.state, size: 22)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(session.tool.title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(theme.primaryLabel)
-                Text("\(session.projectName) · \(session.state.title)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(theme.secondaryLabel)
-                    .lineLimit(1)
+        Button {
+            NotchMateAgentFocus.reveal(session)
+        } label: {
+            HStack(spacing: 10) {
+                NotchMateAgentGlyph(tool: session.tool, state: session.state, size: 22)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(session.tool.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(theme.primaryLabel)
+                    Text("\(session.projectName) · \(session.state.title)")
+                        .font(.system(size: 10))
+                        .foregroundStyle(theme.secondaryLabel)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+            .contentShape(Rectangle())
         }
-        .accessibilityElement(children: .combine)
+        .buttonStyle(.plain)
+        .help("Open \(session.tool.title)")
         .accessibilityLabel("\(session.tool.title), \(session.projectName), \(session.state.title)")
+        .accessibilityHint("Opens \(session.tool.title)")
     }
 
     private func empty(title: String, detail: String) -> some View {
@@ -171,8 +178,14 @@ struct NotchMateAgentIconCluster: View {
     var body: some View {
         HStack(spacing: max(2, size * 0.08)) {
             ForEach(summaries) { summary in
-                NotchMateAgentGlyph(tool: summary.tool, state: summary.state, size: size - 4)
-                    .help("\(summary.tool.title) · \(summary.state.title)")
+                Button {
+                    NotchMateAgentFocus.reveal(summary)
+                } label: {
+                    NotchMateAgentGlyph(tool: summary.tool, state: summary.state, size: size - 4)
+                }
+                .buttonStyle(.plain)
+                .help("Open \(summary.tool.title)")
+                .accessibilityHint("Opens \(summary.tool.title)")
             }
         }
     }
