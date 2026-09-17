@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		DDE3175A305BE60000E4E79C /* NookApp in Frameworks */ = {isa = PBXBuildFile; productRef = DDE31759305BE60000E4E79C /* NookApp */; };
+		DDE3175D305BE71000E4E79C /* MediaRemoteAdapter in Frameworks */ = {isa = PBXBuildFile; productRef = DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */; };
+		DDE3175F305BE71000E4E79C /* MediaRemoteAdapter.framework in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,9 +29,24 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				DDE3175A305BE60000E4E79C /* NookApp in Frameworks */,
+				DDE3175D305BE71000E4E79C /* MediaRemoteAdapter in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DDE3175E305BE71000E4E79C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				DDE3175F305BE71000E4E79C /* MediaRemoteAdapter.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXGroup section */
 		DDE31741305BE54200E4E79C = {
@@ -58,6 +75,7 @@
 				DDE31746305BE54200E4E79C /* Sources */,
 				DDE31747305BE54200E4E79C /* Frameworks */,
 				DDE31748305BE54200E4E79C /* Resources */,
+				DDE3175E305BE71000E4E79C /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -67,6 +85,7 @@
 			name = NotchMate;
 			packageProductDependencies = (
 				DDE31759305BE60000E4E79C /* NookApp */,
+				DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */,
 			);
 			productName = NotchMate;
 			productReference = DDE3174A305BE54200E4E79C /* NotchMate.app */;
@@ -98,6 +117,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */,
+				DDE3175B305BE71000E4E79C /* XCRemoteSwiftPackageReference "mediaremote-adapter" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DDE3174B305BE54200E4E79C /* Products */;
@@ -252,7 +272,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -285,7 +305,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -340,6 +360,14 @@
 				minimumVersion = 0.4.0;
 			};
 		};
+		DDE3175B305BE71000E4E79C /* XCRemoteSwiftPackageReference "mediaremote-adapter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ejbills/mediaremote-adapter";
+			requirement = {
+				kind = revision;
+				revision = 5b6afde3f501a3da567e23bf7f23d562938a1809;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -347,6 +375,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */;
 			productName = NookApp;
+		};
+		DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDE3175B305BE71000E4E79C /* XCRemoteSwiftPackageReference "mediaremote-adapter" */;
+			productName = MediaRemoteAdapter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

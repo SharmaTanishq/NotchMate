@@ -65,20 +65,23 @@ struct NotchMateSettingsView: View {
                 case .nowPlaying:
                     NotchMateComingSoonPane(
                         title: "Now Playing",
-                        explanation: "Shows only the current item from macOS Now Playing. NotchMate never signs into Spotify or other streaming accounts.",
-                        isOn: $featureFlags.nowPlayingEnabled
+                        explanation: "Shows the current macOS Now Playing item (Music, Spotify app, YouTube in a browser, and anything else Control Center can see). NotchMate never signs into Spotify. Skip uses system next/previous when the player allows it.",
+                        isOn: $featureFlags.nowPlayingEnabled,
+                        comingSoon: false
                     )
                 case .calendar:
                     NotchMateComingSoonPane(
                         title: "Calendar",
                         explanation: "Upcoming events from the Mac Calendar app, shown in the notch when you opt in.",
-                        isOn: $featureFlags.calendarEnabled
+                        isOn: $featureFlags.calendarEnabled,
+                        comingSoon: true
                     )
                 case .agents:
                     NotchMateComingSoonPane(
                         title: "Agents",
                         explanation: "An assistant hub in the notch. Wiring and model hooks ship in a later slice.",
-                        isOn: $featureFlags.agentsEnabled
+                        isOn: $featureFlags.agentsEnabled,
+                        comingSoon: true
                     )
                 }
             }
@@ -217,13 +220,18 @@ private struct NotchMateComingSoonPane: View {
     let title: String
     let explanation: String
     @Binding var isOn: Bool
+    var comingSoon: Bool = true
 
     var body: some View {
         Form {
             Section {
                 Toggle("Enable \(title)", isOn: $isOn)
             } footer: {
-                Text("Coming soon. The switch is saved so a later update can honor it. \(explanation)")
+                if comingSoon {
+                    Text("Coming soon. The switch is saved so a later update can honor it. \(explanation)")
+                } else {
+                    Text(explanation)
+                }
             }
         }
         .formStyle(.grouped)
@@ -234,5 +242,5 @@ private struct NotchMateComingSoonPane: View {
 #Preview {
     NotchMateSettingsView()
         .environmentObject(AppState(preferenceDefaults: .default))
-        .environmentObject(NotchMateFeatureFlags())
+        .environmentObject(NotchMateFeatureFlags.shared)
 }

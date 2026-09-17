@@ -16,7 +16,7 @@ final class NotchMateSettingsWindowController: NSObject, NSWindowDelegate {
 
     private var window: NSWindow?
     private var previousActivationPolicy: NSApplication.ActivationPolicy = .accessory
-    private let featureFlags = NotchMateFeatureFlags()
+    private let featureFlags = NotchMateFeatureFlags.shared
 
     func present(appState: AppState) {
         if let window {

@@ -22,6 +22,7 @@ enum NotchMateApp {
     static func configuration() -> NookConfiguration {
         var configuration = NookConfiguration()
         configuration.setHome { ContentView() }
+        configuration.setCompactLeading { NotchMateCompactNowPlaying() }
         configuration.setSettings { NotchMateInNotchSettingsRedirect() }
         configuration.branding = NookHostBranding(
             hostName: "NotchMate",
@@ -41,6 +42,7 @@ enum NotchMateApp {
         configuration.onReady = { coordinator in
             migrateAutoPresentationToNotch(appState: coordinator.appState)
             migrateSeedSolidToLiquidGlass(appState: coordinator.appState)
+            NotchMateNowPlaying.shared.bind(flags: NotchMateFeatureFlags.shared)
             routeOpenNookSettingsToWindow(coordinator: coordinator)
         }
         return configuration
