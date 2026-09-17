@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DDE3175A305BE60000E4E79C /* NookApp in Frameworks */ = {isa = PBXBuildFile; productRef = DDE31759305BE60000E4E79C /* NookApp */; };
+		DDE31760305BF00000E4E79C /* NookComponents in Frameworks */ = {isa = PBXBuildFile; productRef = DDE31761305BF00000E4E79C /* NookComponents */; };
 		DDE3175D305BE71000E4E79C /* MediaRemoteAdapter in Frameworks */ = {isa = PBXBuildFile; productRef = DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */; };
 		DDE3175F305BE71000E4E79C /* MediaRemoteAdapter.framework in Embed Frameworks */ = {isa = PBXBuildFile; productRef = DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -29,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				DDE3175A305BE60000E4E79C /* NookApp in Frameworks */,
+				DDE31760305BF00000E4E79C /* NookComponents in Frameworks */,
 				DDE3175D305BE71000E4E79C /* MediaRemoteAdapter in Frameworks */,
 			);
 		};
@@ -85,6 +87,7 @@
 			name = NotchMate;
 			packageProductDependencies = (
 				DDE31759305BE60000E4E79C /* NookApp */,
+				DDE31761305BF00000E4E79C /* NookComponents */,
 				DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */,
 			);
 			productName = NotchMate;
@@ -284,6 +287,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lsqlite3",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.NotchMate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -316,6 +323,10 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lsqlite3",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.app.NotchMate;
@@ -375,6 +386,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */;
 			productName = NookApp;
+		};
+		DDE31761305BF00000E4E79C /* NookComponents */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */;
+			productName = NookComponents;
 		};
 		DDE3175C305BE71000E4E79C /* MediaRemoteAdapter */ = {
 			isa = XCSwiftPackageProductDependency;

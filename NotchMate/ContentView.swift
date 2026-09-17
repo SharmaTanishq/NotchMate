@@ -11,10 +11,14 @@ import SwiftUI
 /// Expanded notch home surface. Hover the menu-bar notch or press ⌥⌘; to show it.
 struct ContentView: View {
     @ObservedObject private var layout = NotchMateLayoutSettings.shared
+    @ObservedObject private var usage = NotchMateUsage.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             NotchMateNowPlayingHome()
+            if usage.isEnabled {
+                NotchMateUsageHome()
+            }
             NotchMateAgentsHome()
         }
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)

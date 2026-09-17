@@ -16,6 +16,8 @@ enum NotchMateSettingsSection: String, CaseIterable, Identifiable, Hashable {
     case nowPlaying
     case calendar
     case agents
+    case usage
+    case notifications
 
     var id: String { rawValue }
 
@@ -26,6 +28,8 @@ enum NotchMateSettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .nowPlaying: return "Now Playing"
         case .calendar: return "Calendar"
         case .agents: return "Agents"
+        case .usage: return "Usage"
+        case .notifications: return "Notifications"
         }
     }
 
@@ -36,6 +40,8 @@ enum NotchMateSettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .nowPlaying: return "play.circle"
         case .calendar: return "calendar"
         case .agents: return "sparkles"
+        case .usage: return "chart.bar"
+        case .notifications: return "bell"
         }
     }
 }
@@ -79,6 +85,10 @@ struct NotchMateSettingsView: View {
                     )
                 case .agents:
                     NotchMateAgentsSettingsPane()
+                case .usage:
+                    NotchMateUsageSettingsPane()
+                case .notifications:
+                    NotchMateNotificationsSettingsPane()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -380,6 +390,122 @@ private struct NotchMateAgentsSettingsPane: View {
             lastError = error.localizedDescription
         }
         isBusy = false
+    }
+}
+
+private struct NotchMateUsageSettingsPane: View {
+    @EnvironmentObject private var featureFlags: NotchMateFeatureFlags
+    @ObservedObject private var usage = NotchMateUsage.shared
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Show usage in the notch", isOn: $featureFlags.usageEnabled)
+            } footer: {
+                Text("Claude and Codex tokens come from local session logs. Cursor does not store token counts on disk, so NotchMate shows conversations and AI lines from its tracking database instead.")
+            }
+
+            if usage.isEnabled {
+                SwiftUI.Section {
+                    ForEach(usage.tools) { item in
+                        VStack(alignment: .leading, spacing: 4) {
+                            LabeledContent(item.tool.title, value: item.today.headline)
+                            Text(item.today.caption)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(item.honesty)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Button("Refresh now") {
+                        usage.refresh()
+                    }
+                } header: {
+                    Text("Today")
+                }
+
+                if let lastError = usage.lastError {
+                    Section {
+                        Text(lastError)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .frame(maxWidth: 560, alignment: .leading)
+    }
+}
+
+private struct NotchMateNotificationsSettingsPane: View {
+    @EnvironmentObject private var featureFlags: NotchMateFeatureFlags
+    @ObservedObject private var toasts = NotchMateNotificationToasts.shared
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Mirror Notification Center in the notch", isOn: $featureFlags.notificationToastsEnabled)
+            } footer: {
+                Text("Reads the local Notification Center database and flashes matching banners through the notch. Gmail in a browser is not included; Mail.app notifications are.")
+            }
+
+            Section {
+                LabeledContent("Full Disk Access") {
+                    Text(toasts.hasFullDiskAccess ? "Granted" : "Needed")
+                        .foregroundStyle(toasts.hasFullDiskAccess ? .secondary : .orange)
+                }
+                Button("Open Full Disk Access settings") {
+                    toasts.openFullDiskAccessSettings()
+                }
+                Button("Check access") {
+                    toasts.refreshAccess()
+                }
+            } footer: {
+                Text("macOS keeps Notification Center in a protected database. NotchMate copies it read-only and never writes to it. Grant Full Disk Access to NotchMate, then click Check access.")
+            }
+
+            SwiftUI.Section {
+                ForEach(NotchMateNotificationToasts.catalog) { source in
+                    Toggle(source.title, isOn: sourceBinding(source.bundleID))
+                }
+            } header: {
+                Text("Sources")
+            } footer: {
+                Text("Only these apps are mirrored. Everything else in Notification Center stays on the system banners.")
+            }
+
+            Section {
+                Button("Preview toast") {
+                    toasts.preview()
+                }
+            }
+
+            if let lastError = toasts.lastError {
+                Section {
+                    Text(lastError)
+                        .foregroundStyle(.orange)
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .frame(maxWidth: 560, alignment: .leading)
+        .onAppear {
+            toasts.refreshAccess()
+        }
+    }
+
+    private func sourceBinding(_ bundleID: String) -> Binding<Bool> {
+        Binding(
+            get: { toasts.enabledBundleIDs.contains(bundleID) },
+            set: { enabled in
+                if enabled {
+                    toasts.enabledBundleIDs.insert(bundleID)
+                } else {
+                    toasts.enabledBundleIDs.remove(bundleID)
+                }
+            }
+        )
     }
 }
 

@@ -11,6 +11,7 @@ import SwiftUI
 
 struct NotchMateAgentsHome: View {
     @ObservedObject private var agents = NotchMateAgents.shared
+    @ObservedObject private var usage = NotchMateUsage.shared
     @Environment(\.nookResolvedTheme) private var theme
 
     var body: some View {
@@ -58,10 +59,10 @@ struct NotchMateAgentsHome: View {
                     Text(session.tool.title)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(theme.primaryLabel)
-                    Text("\(session.projectName) · \(session.state.title)")
+                    Text(sessionDetail(session))
                         .font(.system(size: 10))
                         .foregroundStyle(theme.secondaryLabel)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
                 Spacer(minLength: 0)
             }
@@ -69,8 +70,25 @@ struct NotchMateAgentsHome: View {
         }
         .buttonStyle(.plain)
         .help("Open \(session.tool.title)")
-        .accessibilityLabel("\(session.tool.title), \(session.projectName), \(session.state.title)")
+        .accessibilityLabel("\(session.tool.title), \(sessionDetail(session))")
         .accessibilityHint("Opens \(session.tool.title)")
+    }
+
+    private func sessionDetail(_ session: NotchMateAgentSession) -> String {
+        var parts = [session.projectName, session.state.title]
+        if usage.isEnabled {
+            if let live = usage.liveStats(for: session), live.billedTokens > 0 {
+                parts.append("\(NotchMateUsageTotals.compact(live.billedTokens)) tok")
+                parts.append("\(live.turns) turns")
+            } else if session.tool == .cursor {
+                if let extra = usage.tools.first(where: { $0.tool == .cursor })?.today.extraValue {
+                    parts.append("\(extra) AI lines today")
+                } else {
+                    parts.append("no local tokens")
+                }
+            }
+        }
+        return parts.joined(separator: " · ")
     }
 
     private func empty(title: String, detail: String) -> some View {
