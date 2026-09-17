@@ -22,9 +22,9 @@ struct NotchMateNowPlayingHome: View {
                     title: "Can’t read Now Playing",
                     detail: "The MediaRemote helper stopped. Try toggling Now Playing off and on."
                 )
-            } else if let item = nowPlaying.item {
-                NotchMateNowPlayingCard(item: item)
-                    .id(item.identity)
+            } else if nowPlaying.item != nil {
+                NotchMateNowPlayingCard()
+                    .id(nowPlaying.item?.identity)
                     .transition(.opacity.combined(with: .scale(scale: 0.98)))
             } else {
                 NotchMateNowPlayingEmpty(
@@ -34,7 +34,7 @@ struct NotchMateNowPlayingHome: View {
             }
         }
         .animation(.snappy(duration: 0.28), value: nowPlaying.item?.identity)
-        .animation(.snappy(duration: 0.22), value: nowPlaying.isEnabled)
+        .animation(.snappy(duration: 0.18), value: nowPlaying.item?.isPlaying)
     }
 }
 
@@ -65,35 +65,38 @@ private struct NotchMateNowPlayingEmpty: View {
 private struct NotchMateNowPlayingCard: View {
     @ObservedObject private var nowPlaying = NotchMateNowPlaying.shared
     @Environment(\.nookResolvedTheme) private var theme
-    let item: NotchMateNowPlayingItem
+
+    private var item: NotchMateNowPlayingItem? { nowPlaying.item }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
-            artwork
-            VStack(alignment: .leading, spacing: 6) {
-                Text(item.title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(theme.primaryLabel)
-                    .lineLimit(1)
-                if !item.artist.isEmpty {
-                    Text(item.artist)
-                        .font(.system(size: 12))
-                        .foregroundStyle(theme.secondaryLabel)
+        if let item {
+            HStack(alignment: .center, spacing: 14) {
+                artwork(item)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.primaryLabel)
                         .lineLimit(1)
+                    if !item.artist.isEmpty {
+                        Text(item.artist)
+                            .font(.system(size: 12))
+                            .foregroundStyle(theme.secondaryLabel)
+                            .lineLimit(1)
+                    }
+                    TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+                        progress(item)
+                    }
+                    controls(item)
                 }
-                TimelineView(.periodic(from: .now, by: 0.5)) { timeline in
-                    progress(at: timeline.date)
-                }
-                controls
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity)
     }
 
-    private var artwork: some View {
+    private func artwork(_ item: NotchMateNowPlayingItem) -> some View {
         Group {
             if let image = item.artwork {
                 Image(nsImage: image)
@@ -112,7 +115,7 @@ private struct NotchMateNowPlayingCard: View {
     }
 
     @ViewBuilder
-    private func progress(at _: Date) -> some View {
+    private func progress(_ item: NotchMateNowPlayingItem) -> some View {
         if let duration = item.duration, duration > 0, let elapsed = item.elapsedNow {
             let fraction = min(max(elapsed / duration, 0), 1)
             VStack(alignment: .leading, spacing: 3) {
@@ -136,7 +139,7 @@ private struct NotchMateNowPlayingCard: View {
         }
     }
 
-    private var controls: some View {
+    private func controls(_ item: NotchMateNowPlayingItem) -> some View {
         HStack(spacing: 18) {
             Button(action: nowPlaying.skipPrevious) {
                 Image(systemName: "backward.fill")
@@ -183,20 +186,27 @@ struct NotchMateCompactNowPlaying: View {
         }
         .frame(width: metrics.compactSlotSize, height: metrics.compactSlotSize)
         .animation(.snappy(duration: 0.22), value: nowPlaying.item?.identity)
+        .animation(.snappy(duration: 0.18), value: nowPlaying.item?.isPlaying)
     }
 
-    @ViewBuilder
     private func compactArtwork(_ item: NotchMateNowPlayingItem) -> some View {
-        if let image = item.artwork {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: metrics.compactSlotSize - 4, height: metrics.compactSlotSize - 4)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-        } else {
+        ZStack(alignment: .bottomTrailing) {
+            if let image = item.artwork {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: metrics.compactSlotSize - 4, height: metrics.compactSlotSize - 4)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            } else {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(theme.secondaryLabel.opacity(0.18))
+                    .frame(width: metrics.compactSlotSize - 4, height: metrics.compactSlotSize - 4)
+            }
             Image(systemName: item.isPlaying ? "play.fill" : "pause.fill")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 7, weight: .bold))
                 .foregroundStyle(theme.primaryLabel)
+                .padding(2)
+                .background(.ultraThinMaterial, in: Circle())
         }
     }
 }
