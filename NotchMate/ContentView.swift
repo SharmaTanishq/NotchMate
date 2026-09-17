@@ -14,7 +14,7 @@ struct ContentView: View {
     @ObservedObject private var usage = NotchMateUsage.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             NotchMateNowPlayingHome()
             if usage.isEnabled {
                 NotchMateUsageHome()

@@ -15,7 +15,7 @@ struct NotchMateAgentsHome: View {
     @Environment(\.nookResolvedTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("Agents")
                     .font(.system(size: 13, weight: .semibold))
@@ -34,18 +34,18 @@ struct NotchMateAgentsHome: View {
             } else if agents.visibleSessions.isEmpty {
                 empty(
                     title: "No agent sessions",
-                    detail: "Install hooks from Settings → Agents. Status files land in Application Support/NotchMate/agent-status."
+                    detail: "Install hooks from Settings → Agents."
                 )
             } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(agents.visibleSessions.prefix(8)) { session in
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(agents.visibleSessions.prefix(6)) { session in
                         sessionRow(session)
                     }
                 }
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -53,42 +53,44 @@ struct NotchMateAgentsHome: View {
         Button {
             NotchMateAgentFocus.reveal(session)
         } label: {
-            HStack(spacing: 10) {
-                NotchMateAgentGlyph(tool: session.tool, state: session.state, size: 22)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(session.tool.title)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(theme.primaryLabel)
-                    Text(sessionDetail(session))
-                        .font(.system(size: 10))
-                        .foregroundStyle(theme.secondaryLabel)
-                        .lineLimit(2)
+            HStack(spacing: 8) {
+                NotchMateAgentGlyph(tool: session.tool, state: session.state, size: 18)
+                Text(session.tool.title)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.primaryLabel)
+                    .lineLimit(1)
+                Text(sessionLine(session))
+                    .font(.system(size: 11))
+                    .foregroundStyle(theme.secondaryLabel)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                if let metric = sessionMetric(session) {
+                    Text(metric)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(theme.tertiaryLabel)
+                        .lineLimit(1)
                 }
-                Spacer(minLength: 0)
             }
+            .padding(.vertical, 3)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .help("Open \(session.tool.title)")
-        .accessibilityLabel("\(session.tool.title), \(sessionDetail(session))")
+        .accessibilityLabel("\(session.tool.title), \(sessionLine(session))\(sessionMetric(session).map { ", \($0)" } ?? "")")
         .accessibilityHint("Opens \(session.tool.title)")
     }
 
-    private func sessionDetail(_ session: NotchMateAgentSession) -> String {
-        var parts = [session.projectName, session.state.title]
-        if usage.isEnabled {
-            if let live = usage.liveStats(for: session), live.billedTokens > 0 {
-                parts.append("\(NotchMateUsageTotals.compact(live.billedTokens)) tok")
-                parts.append("\(live.turns) turns")
-            } else if session.tool == .cursor {
-                if let extra = usage.tools.first(where: { $0.tool == .cursor })?.today.extraValue {
-                    parts.append("\(extra) AI lines today")
-                } else {
-                    parts.append("no local tokens")
-                }
-            }
+    private func sessionLine(_ session: NotchMateAgentSession) -> String {
+        "\(session.projectName) · \(session.state.title)"
+    }
+
+    private func sessionMetric(_ session: NotchMateAgentSession) -> String? {
+        guard usage.isEnabled else { return nil }
+        if let live = usage.liveStats(for: session), live.billedTokens > 0 {
+            return NotchMateUsageTotals.compact(live.billedTokens)
         }
-        return parts.joined(separator: " · ")
+        return nil
     }
 
     private func empty(title: String, detail: String) -> some View {
