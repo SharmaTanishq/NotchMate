@@ -10,6 +10,11 @@ import SwiftUI
 
 /// Host configuration for NotchMate. `main.swift` boots OpenNook with this.
 enum NotchMateApp {
+    /// One-shot: leftover `.solid` from NotchMate's previous seed is upgraded to
+    /// Liquid Glass. After this flag is set, Settings → Surface (Solid / Translucent /
+    /// Liquid Glass) is left alone.
+    private static let liquidGlassSeedMigrationKey = "notchmate.migratedSeedSolidToLiquidGlass"
+
     @MainActor
     static func configuration() -> NookConfiguration {
         var configuration = NookConfiguration()
@@ -19,19 +24,19 @@ enum NotchMateApp {
             hostTagline: "A notch companion built on OpenNook."
         )
         configuration.topBar.leadingTitle = { _ in "NotchMate" }
-        // First-run seed: fused-to-top notch chrome (not Auto, which floats a pill on
-        // displays OpenNook doesn't treat as notched). UserDefaults wins after the user
-        // picks Pill vs Notch. Seed is never written, so later default tweaks still apply
-        // to people who never opened Settings.
+        // First-run seed: fused-to-top notch chrome with OpenNook Liquid Glass.
+        // UserDefaults wins after the user picks a surface or shape. Seed is never
+        // written, so later default tweaks still apply to people who never saved prefs.
         configuration.preferenceDefaults = NookPreferenceDefaults(
             appearance: NookAppearancePreferences(
                 chromePalette: .dark,
-                surfaceStyle: .solid,
+                surfaceStyle: .liquidGlass,
                 presentation: .notch
             )
         )
         configuration.onReady = { coordinator in
             migrateAutoPresentationToNotch(appState: coordinator.appState)
+            migrateSeedSolidToLiquidGlass(appState: coordinator.appState)
         }
         return configuration
     }
@@ -45,5 +50,32 @@ enum NotchMateApp {
         var preferences = appState.appearancePreferences
         preferences.presentation = .notch
         appState.replaceAppearancePreferences(preferences)
+    }
+
+    /// Prior NotchMate seed used `.solid`. Untouched / seed-only blobs still on `.solid`
+    /// move to `.liquidGlass` once. `.translucent` and `.liquidGlass` are treated as an
+    /// explicit Settings choice and are not rewritten.
+    @MainActor
+    static func migrateSeedSolidToLiquidGlass(appState: AppState) {
+        let defaults = UserDefaults.standard
+        if defaults.bool(forKey: liquidGlassSeedMigrationKey) {
+            return
+        }
+
+        let style = appState.appearancePreferences.surfaceStyle
+        if style == .translucent || style == .liquidGlass {
+            defaults.set(true, forKey: liquidGlassSeedMigrationKey)
+            return
+        }
+
+        guard style == .solid else {
+            defaults.set(true, forKey: liquidGlassSeedMigrationKey)
+            return
+        }
+
+        var preferences = appState.appearancePreferences
+        preferences.surfaceStyle = .liquidGlass
+        appState.replaceAppearancePreferences(preferences)
+        defaults.set(true, forKey: liquidGlassSeedMigrationKey)
     }
 }
