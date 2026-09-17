@@ -5,17 +5,27 @@
 //  Created by Tanishq Sharma on 9/17/26.
 //
 
+import NookApp
 import SwiftUI
 
+/// Expanded notch home surface. Hover the menu-bar notch or press ⌥⌘; to show it.
 struct ContentView: View {
+    @Environment(\.nookResolvedTheme) private var theme
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(spacing: 8) {
+            Image(systemName: "menubar.dock.rectangle")
+                .font(.system(size: 30, weight: .light))
+                .foregroundStyle(theme.secondaryLabel)
+            Text("NotchMate")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(theme.primaryLabel)
+            Text("Hover the notch or press ⌥⌘;")
+                .font(.system(size: 11))
+                .foregroundStyle(theme.secondaryLabel)
         }
-        .padding()
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 36)
     }
 }
 

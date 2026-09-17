@@ -6,6 +6,10 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DDE3175A305BE60000E4E79C /* NookApp in Frameworks */ = {isa = PBXBuildFile; productRef = DDE31759305BE60000E4E79C /* NookApp */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		DDE3174A305BE54200E4E79C /* NotchMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NotchMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -22,6 +26,7 @@
 		DDE31747305BE54200E4E79C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				DDE3175A305BE60000E4E79C /* NookApp in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -60,6 +65,9 @@
 				DDE3174C305BE54200E4E79C /* NotchMate */,
 			);
 			name = NotchMate;
+			packageProductDependencies = (
+				DDE31759305BE60000E4E79C /* NookApp */,
+			);
 			productName = NotchMate;
 			productReference = DDE3174A305BE54200E4E79C /* NotchMate.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +96,9 @@
 			);
 			mainGroup = DDE31741305BE54200E4E79C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DDE3174B305BE54200E4E79C /* Products */;
 			projectDirPath = "";
@@ -245,7 +256,10 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -275,7 +289,10 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -313,6 +330,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twinkling-reality/opennook";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DDE31759305BE60000E4E79C /* NookApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDE31758305BE60000E4E79C /* XCRemoteSwiftPackageReference "opennook" */;
+			productName = NookApp;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DDE31742305BE54200E4E79C /* Project object */;
 	validationLevel = 1;
