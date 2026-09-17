@@ -7,6 +7,7 @@
 
 import Combine
 import NookApp
+import NookComponents
 import SwiftUI
 
 /// Host configuration for NotchMate. `main.swift` boots OpenNook with this.
@@ -22,7 +23,11 @@ enum NotchMateApp {
     static func configuration() -> NookConfiguration {
         let layout = NotchMateLayoutSettings.shared
         var configuration = NookConfiguration()
-        configuration.setHome { ContentView() }
+        configuration.setHome {
+            NookActivityHost(queue: NotchMateActivities.shared.queue) {
+                ContentView()
+            }
+        }
         configuration.setCompactLeading { NotchMateCompactChrome(slot: .leading) }
         configuration.setCompactTrailing { NotchMateCompactChrome(slot: .trailing) }
         configuration.setSettings { NotchMateInNotchSettingsRedirect() }
@@ -48,6 +53,9 @@ enum NotchMateApp {
             migrateSeedSolidToLiquidGlass(appState: coordinator.appState)
             NotchMateNowPlaying.shared.bind(flags: NotchMateFeatureFlags.shared)
             NotchMateAgents.shared.bind(flags: NotchMateFeatureFlags.shared)
+            NotchMateUsage.shared.bind(flags: NotchMateFeatureFlags.shared)
+            NotchMateNotificationToasts.shared.bind(flags: NotchMateFeatureFlags.shared)
+            NotchMateActivities.shared.queue.bind(to: coordinator)
             routeOpenNookSettingsToWindow(coordinator: coordinator)
         }
         return configuration

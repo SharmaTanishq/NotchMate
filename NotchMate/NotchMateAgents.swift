@@ -8,7 +8,7 @@
 import Combine
 import Foundation
 
-enum NotchMateAgentTool: String, CaseIterable, Identifiable, Codable {
+enum NotchMateAgentTool: String, CaseIterable, Identifiable, Codable, Sendable {
     case claude
     case codex
     case cursor
@@ -34,7 +34,7 @@ enum NotchMateAgentTool: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-enum NotchMateAgentState: String, Codable {
+enum NotchMateAgentState: String, Codable, Sendable {
     case running
     case idle
     case done
@@ -50,7 +50,7 @@ enum NotchMateAgentState: String, Codable {
     }
 }
 
-struct NotchMateAgentSession: Identifiable, Equatable, Codable {
+struct NotchMateAgentSession: Identifiable, Equatable, Codable, Sendable {
     var tool: NotchMateAgentTool
     var session: String
     var cwd: String
@@ -70,6 +70,7 @@ struct NotchMateAgentToolSummary: Identifiable, Equatable {
     var tool: NotchMateAgentTool
     var state: NotchMateAgentState
     var count: Int
+    var cwd: String
 
     var id: String { tool.rawValue }
 
@@ -118,7 +119,12 @@ final class NotchMateAgents: ObservableObject {
             } else {
                 state = .idle
             }
-            return NotchMateAgentToolSummary(tool: tool, state: state, count: matches.count)
+            return NotchMateAgentToolSummary(
+                tool: tool,
+                state: state,
+                count: matches.count,
+                cwd: matches.sorted { $0.updatedAt > $1.updatedAt }.first?.cwd ?? ""
+            )
         }
     }
 
