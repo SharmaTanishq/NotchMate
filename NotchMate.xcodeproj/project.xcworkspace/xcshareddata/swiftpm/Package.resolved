@@ -1,0 +1,23 @@
+{
+  "originHash" : "11567d991d5576f3a4f295b395c539d0b41c826b10b1373e376a9ff062cdb6fd",
+  "pins" : [
+    {
+      "identity" : "mediaremote-adapter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ejbills/mediaremote-adapter",
+      "state" : {
+        "revision" : "5b6afde3f501a3da567e23bf7f23d562938a1809"
+      }
+    },
+    {
+      "identity" : "opennook",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twinkling-reality/opennook",
+      "state" : {
+        "revision" : "db42d19f0636bd95115f25c2ca0d2cb75d8f9b75",
+        "version" : "0.4.0"
+      }
+    }
+  ],
+  "version" : 3
+}

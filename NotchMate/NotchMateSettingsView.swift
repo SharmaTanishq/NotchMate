@@ -43,6 +43,7 @@ enum NotchMateSettingsSection: String, CaseIterable, Identifiable, Hashable {
 struct NotchMateSettingsView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var featureFlags: NotchMateFeatureFlags
+    @EnvironmentObject private var layout: NotchMateLayoutSettings
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var section: NotchMateSettingsSection? = .general
 
@@ -77,12 +78,7 @@ struct NotchMateSettingsView: View {
                         comingSoon: true
                     )
                 case .agents:
-                    NotchMateComingSoonPane(
-                        title: "Agents",
-                        explanation: "An assistant hub in the notch. Wiring and model hooks ship in a later slice.",
-                        isOn: $featureFlags.agentsEnabled,
-                        comingSoon: true
-                    )
+                    NotchMateAgentsSettingsPane()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -140,6 +136,7 @@ private struct NotchMateGeneralSettingsPane: View {
 
 private struct NotchMateAppearanceSettingsPane: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var layout: NotchMateLayoutSettings
 
     var body: some View {
         Form {
@@ -162,6 +159,46 @@ private struct NotchMateAppearanceSettingsPane: View {
                 .pickerStyle(.segmented)
             } footer: {
                 Text(surfaceCaption)
+            }
+
+            Section {
+                Picker("Agent icons", selection: $layout.agentPlacement) {
+                    ForEach(NotchMateAgentPlacement.allCases) { placement in
+                        Text(placement.title).tag(placement)
+                    }
+                }
+                .pickerStyle(.segmented)
+            } footer: {
+                Text(layout.agentPlacement.caption)
+            }
+
+            Section {
+                slider(
+                    "Compact slot size",
+                    value: $layout.compactSlotSize,
+                    range: 18...36,
+                    step: 1
+                )
+                slider(
+                    "Compact extra width",
+                    value: $layout.compactExtraWidth,
+                    range: 0...80,
+                    step: 2
+                )
+                slider(
+                    "Expanded width",
+                    value: $layout.expandedWidth,
+                    range: 420...720,
+                    step: 10
+                )
+                slider(
+                    "Edge padding",
+                    value: $layout.edgePadding,
+                    range: 4...20,
+                    step: 1
+                )
+            } footer: {
+                Text("Slot size and extra width change the collapsed island immediately. Expanded width and OpenNook edge padding are applied when NotchMate launches, because OpenNook pins those on NookConfiguration.")
             }
         }
         .formStyle(.grouped)
@@ -214,6 +251,136 @@ private struct NotchMateAppearanceSettingsPane: View {
             return "macOS 26 uses real Liquid Glass; earlier versions use OpenNook’s approximation."
         }
     }
+
+    private func slider(
+        _ title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text("\(Int(value.wrappedValue.rounded())) pt")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            Slider(value: value, in: range, step: step)
+        }
+    }
+}
+
+private struct NotchMateAgentsSettingsPane: View {
+    @EnvironmentObject private var featureFlags: NotchMateFeatureFlags
+    @ObservedObject private var agents = NotchMateAgents.shared
+    @State private var lastResult: NotchMateHookInstallResult?
+    @State private var lastError: String?
+    @State private var isBusy = false
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Enable Agents", isOn: $featureFlags.agentsEnabled)
+            } footer: {
+                Text("When on, the collapsed notch shows circular icons for Claude Code, Codex, Cursor, and Pi sessions that have reported in. The expanded notch lists tool, project, and state.")
+            }
+
+            Section {
+                LabeledContent("Status folder") {
+                    Text(agents.statusFolder.path)
+                        .font(.system(size: 11, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+                Button("Install hooks…") {
+                    confirmInstall()
+                }
+                .disabled(isBusy)
+                Button("Remove NotchMate hooks") {
+                    runUninstall()
+                }
+                .disabled(isBusy)
+            } footer: {
+                Text("Install copies a Python reporter into Application Support, then merges NotchMate commands into ~/.claude/settings.json, ~/.cursor/hooks.json, and ~/.codex/hooks.json, and writes ~/.pi/agent/extensions/notchmate-status.ts. Existing hooks stay. NotchMate never edits those files unless you click Install.")
+            }
+
+            SwiftUI.Section {
+                LabeledContent("Claude Code") {
+                    Text("Running, idle, done, approval")
+                }
+                LabeledContent("Codex") {
+                    Text("Running, idle, done, approval")
+                }
+                LabeledContent("Cursor") {
+                    Text("Running, idle, done — no approval bounce")
+                }
+                LabeledContent("Pi") {
+                    Text("Running, idle, done — no approval bounce")
+                }
+            } header: {
+                Text("What each tool can signal")
+            } footer: {
+                Text("Icons jump only when a tool actually fires a permission-request hook. Cursor and Pi have no such event, so they stay quiet.")
+            }
+
+            if let lastResult {
+                SwiftUI.Section {
+                    Text(lastResult.claude)
+                    Text(lastResult.cursor)
+                    Text(lastResult.codex)
+                    Text(lastResult.pi)
+                    ForEach(lastResult.notes, id: \.self) { note in
+                        Text(note)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Last install")
+                }
+            }
+
+            if let lastError {
+                Section {
+                    Text(lastError)
+                        .foregroundStyle(.red)
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .frame(maxWidth: 560, alignment: .leading)
+    }
+
+    private func confirmInstall() {
+        let alert = NSAlert()
+        alert.messageText = "Install agent hooks?"
+        alert.informativeText = "NotchMate will merge status commands into your Claude, Cursor, and Codex hook files and add a Pi extension. It will not replace those files. You can remove the NotchMate entries later from this pane."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Install")
+        alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        isBusy = true
+        lastError = nil
+        do {
+            lastResult = try NotchMateAgentHookInstaller.install()
+            if !featureFlags.agentsEnabled {
+                featureFlags.agentsEnabled = true
+            }
+            agents.reload()
+        } catch {
+            lastError = error.localizedDescription
+        }
+        isBusy = false
+    }
+
+    private func runUninstall() {
+        isBusy = true
+        lastError = nil
+        do {
+            lastResult = try NotchMateAgentHookInstaller.uninstall()
+        } catch {
+            lastError = error.localizedDescription
+        }
+        isBusy = false
+    }
 }
 
 private struct NotchMateComingSoonPane: View {
@@ -243,4 +410,5 @@ private struct NotchMateComingSoonPane: View {
     NotchMateSettingsView()
         .environmentObject(AppState(preferenceDefaults: .default))
         .environmentObject(NotchMateFeatureFlags.shared)
+        .environmentObject(NotchMateLayoutSettings.shared)
 }

@@ -17,6 +17,7 @@ final class NotchMateSettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private var previousActivationPolicy: NSApplication.ActivationPolicy = .accessory
     private let featureFlags = NotchMateFeatureFlags.shared
+    private let layout = NotchMateLayoutSettings.shared
 
     func present(appState: AppState) {
         if let window {
@@ -51,6 +52,7 @@ final class NotchMateSettingsWindowController: NSObject, NSWindowDelegate {
         let root = NotchMateSettingsView()
             .environmentObject(appState)
             .environmentObject(featureFlags)
+            .environmentObject(layout)
         window.contentView = NSHostingView(rootView: root)
     }
 

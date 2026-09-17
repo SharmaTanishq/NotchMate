@@ -171,8 +171,10 @@ private struct NotchMateNowPlayingCard: View {
 
 struct NotchMateCompactNowPlaying: View {
     @ObservedObject private var nowPlaying = NotchMateNowPlaying.shared
+    @ObservedObject private var layout = NotchMateLayoutSettings.shared
     @Environment(\.nookResolvedTheme) private var theme
-    @Environment(\.nookChromeMetrics) private var metrics
+
+    private var slot: CGFloat { layout.compactSlotSize }
 
     var body: some View {
         Group {
@@ -184,7 +186,7 @@ struct NotchMateCompactNowPlaying: View {
                     .foregroundStyle(theme.primaryLabel.opacity(0.85))
             }
         }
-        .frame(width: metrics.compactSlotSize, height: metrics.compactSlotSize)
+        .frame(width: slot, height: slot)
         .animation(.snappy(duration: 0.22), value: nowPlaying.item?.identity)
         .animation(.snappy(duration: 0.18), value: nowPlaying.item?.isPlaying)
     }
@@ -195,12 +197,12 @@ struct NotchMateCompactNowPlaying: View {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: metrics.compactSlotSize - 4, height: metrics.compactSlotSize - 4)
+                    .frame(width: slot - 4, height: slot - 4)
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             } else {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(theme.secondaryLabel.opacity(0.18))
-                    .frame(width: metrics.compactSlotSize - 4, height: metrics.compactSlotSize - 4)
+                    .frame(width: slot - 4, height: slot - 4)
             }
             Image(systemName: item.isPlaying ? "play.fill" : "pause.fill")
                 .font(.system(size: 7, weight: .bold))

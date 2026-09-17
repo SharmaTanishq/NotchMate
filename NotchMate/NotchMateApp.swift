@@ -20,10 +20,14 @@ enum NotchMateApp {
 
     @MainActor
     static func configuration() -> NookConfiguration {
+        let layout = NotchMateLayoutSettings.shared
         var configuration = NookConfiguration()
         configuration.setHome { ContentView() }
-        configuration.setCompactLeading { NotchMateCompactNowPlaying() }
+        configuration.setCompactLeading { NotchMateCompactChrome(slot: .leading) }
+        configuration.setCompactTrailing { NotchMateCompactChrome(slot: .trailing) }
         configuration.setSettings { NotchMateInNotchSettingsRedirect() }
+        configuration.metrics = layout.chromeMetrics
+        configuration.expandedWidth = layout.expandedWidth
         configuration.branding = NookHostBranding(
             hostName: "NotchMate",
             hostTagline: "A notch companion built on OpenNook."
@@ -43,6 +47,7 @@ enum NotchMateApp {
             migrateAutoPresentationToNotch(appState: coordinator.appState)
             migrateSeedSolidToLiquidGlass(appState: coordinator.appState)
             NotchMateNowPlaying.shared.bind(flags: NotchMateFeatureFlags.shared)
+            NotchMateAgents.shared.bind(flags: NotchMateFeatureFlags.shared)
             routeOpenNookSettingsToWindow(coordinator: coordinator)
         }
         return configuration
