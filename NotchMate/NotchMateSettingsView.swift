@@ -453,7 +453,7 @@ private struct NotchMateNotificationsSettingsPane: View {
             Section {
                 LabeledContent("Full Disk Access") {
                     Text(toasts.hasFullDiskAccess ? "Granted" : "Needed")
-                        .foregroundStyle(toasts.hasFullDiskAccess ? .secondary : .orange)
+                        .foregroundStyle(toasts.hasFullDiskAccess ? Color.secondary : Color.orange)
                 }
                 Button("Open Full Disk Access settings") {
                     toasts.openFullDiskAccessSettings()

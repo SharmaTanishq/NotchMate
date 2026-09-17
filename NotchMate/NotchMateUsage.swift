@@ -10,7 +10,7 @@ import Combine
 import Foundation
 import SQLite3
 
-struct NotchMateUsageTotals: Equatable, Sendable {
+nonisolated struct NotchMateUsageTotals: Equatable, Sendable {
     var inputTokens: Int = 0
     var outputTokens: Int = 0
     var turns: Int = 0
@@ -72,7 +72,7 @@ struct NotchMateUsageTotals: Equatable, Sendable {
     }
 }
 
-struct NotchMateToolUsage: Identifiable, Equatable, Sendable {
+nonisolated struct NotchMateToolUsage: Identifiable, Equatable, Sendable {
     var tool: NotchMateAgentTool
     var today: NotchMateUsageTotals
     var honesty: String
@@ -154,7 +154,7 @@ final class NotchMateUsage: ObservableObject {
     }
 }
 
-private struct NotchMateUsageScan: Sendable {
+private nonisolated struct NotchMateUsageScan: Sendable {
     var tools: [NotchMateToolUsage]
     var live: [String: NotchMateUsageTotals]
     var error: String?

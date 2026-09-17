@@ -11,6 +11,7 @@ import Combine
 import Foundation
 import NookComponents
 import SQLite3
+import SwiftUI
 
 struct NotchMateNotificationSource: Identifiable, Hashable {
     var id: String { bundleID }
